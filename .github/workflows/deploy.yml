@@ -51,7 +51,10 @@ jobs:
             CONTAINER_NAME="servicio-importador" &&
             IMAGE_NAME=$(docker inspect --format='{{.Config.Image}}' "$CONTAINER_NAME") &&
             if [[ -n "$IMAGE_NAME" ]]; then
+              docker stop "$CONTAINER_NAME"  
+              docker rm "$CONTAINER_NAME"
+              docker rmi "$IMAGE_NAME"
               echo "$IMAGE_NAME"
-            fi
-            ls'
+            fi &&
+            docker compose up servicio-importador'
             exit
