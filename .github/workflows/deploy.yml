@@ -45,6 +45,8 @@ jobs:
           script: |
             ssh -i ~/id_rsaalain mome@192.168.0.98 '
             cd galileo-newdev/importador/galileo_servicio_importador &&
+            git fetch origin &&
+            git reset --hard origin/main &&
             git pull &&
             export PATH=/opt/maven/bin:$PATH && mvn clean install -DskipTests &&
             mv ./target/servicio-importador-0.0.1-SNAPSHOT.jar ../servicio-importador.jar &&
