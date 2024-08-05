@@ -48,7 +48,8 @@ jobs:
             export PATH=/opt/maven/bin:$PATH && mvn clean install -DskipTests &&
             mv ./target/servicio-importador-0.0.1-SNAPSHOT.jar ../servicio-importador.jar &&
             cd ../../ &&
-            IMAGE_NAME=$(docker inspect --format='{{.Config.Image}}' "servicio-importador") &&
+            CONTAINER_NAME="servicio-importador" &&
+            IMAGE_NAME=$(docker inspect --format='{{.Config.Image}}' "$CONTAINER_NAME") &&
             if [[ -n "$IMAGE_NAME" ]]; then
               echo "$IMAGE_NAME"
             fi
