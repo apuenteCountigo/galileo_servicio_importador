@@ -56,5 +56,5 @@ jobs:
               docker rmi "$IMAGE_NAME"
               echo "$IMAGE_NAME"
             fi &&
-            docker compose up servicio-importador'
+            docker compose up servicio-importador -d'
             exit
