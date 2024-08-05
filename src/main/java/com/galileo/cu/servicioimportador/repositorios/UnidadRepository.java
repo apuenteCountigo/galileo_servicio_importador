@@ -55,7 +55,6 @@ public class UnidadRepository {
             int rowNumber = 0;
             while (rows.hasNext()) {
 
-                Unidades unidad = new Unidades();
                 Row currentRow = rows.next();
 
                 Iterator<Cell> cellsInRow = currentRow.iterator();
@@ -72,6 +71,21 @@ public class UnidadRepository {
 
                 SALTO:
                 try {
+
+                    Unidades unidad = new Unidades();
+
+                    boolean allCellsEmpty = true;
+                    for (Cell cell : currentRow) {
+                        if (cell.getCellType() != CellType.BLANK) {
+                            allCellsEmpty = false;
+                            break;
+                        }
+                    }
+
+                    if (allCellsEmpty) {
+                        break SALTO;
+                    }
+
                     while (cellsInRow.hasNext()) {
 
                         Cell currentCell = cellsInRow.next();

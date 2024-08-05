@@ -67,7 +67,6 @@ public class UsuarioRepository {
         int importacionesIncorrectas = 0;
         List<ErroresImportador> resultadoImportacion = new ArrayList<>();
 
-        Usuarios usuario = null;
         String tip = null;
 
         try {
@@ -94,6 +93,21 @@ public class UsuarioRepository {
                 LocalDateTime fechaExpiracion = null;
                 SALTO:
                 try {
+
+                    Usuarios usuario = new Usuarios();
+
+                    boolean allCellsEmpty = true;
+                    for (Cell cell : currentRow) {
+                        if (cell.getCellType() != CellType.BLANK) {
+                            allCellsEmpty = false;
+                            break;
+                        }
+                    }
+
+                    if (allCellsEmpty) {
+                      break SALTO;
+                    }
+
                     while (cellsInRow.hasNext()) {
                         Perfiles perfil = new Perfiles();
                         Empleos empleo = new Empleos();

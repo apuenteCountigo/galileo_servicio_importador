@@ -29,19 +29,17 @@ public class BalizaRepository {
     private final TipoContratoFeignClient tipoContratoFeignClient;
     private final ConexionFeignClient conexionFeignClient;
     private final BalizaFeignClient balizaFeignClient;
-
     private final ApisFeignClient apisFeignClient;
 
     @Autowired
-    public BalizaRepository(TipoBalizaFeignClient tipoBalizaFeignClient,
-            TipoContratoFeignClient tipoContratoFeignClient, ConexionFeignClient conexionFeignClient,
-            BalizaFeignClient balizaFeignClient, ApisFeignClient apisFeignClient) {
+    public BalizaRepository(TipoBalizaFeignClient tipoBalizaFeignClient, TipoContratoFeignClient tipoContratoFeignClient, ConexionFeignClient conexionFeignClient, BalizaFeignClient balizaFeignClient, ApisFeignClient apisFeignClient) {
         this.tipoBalizaFeignClient = tipoBalizaFeignClient;
         this.tipoContratoFeignClient = tipoContratoFeignClient;
         this.conexionFeignClient = conexionFeignClient;
         this.balizaFeignClient = balizaFeignClient;
         this.apisFeignClient = apisFeignClient;
     }
+
 
     public ResponseEntity<List<ErroresImportador>> cargarExcelBalizas(InputStream is, String token) {
 
@@ -53,15 +51,13 @@ public class BalizaRepository {
 
         try {
             elementosRestantesDataMiner = elementosRestantesDataMiner();
-        } catch (Exception exception) {
-            if (exception.getMessage().contains("Se ha alcanzado el número máximo de elementos permitidos")) {
-                return new ResponseEntity(
-                        "Se ha alcanzado el número máximo de elementos permitidos, por favor contacte con un Superadministrador",
-                        HttpStatus.BAD_REQUEST);
-            } else
-                return new ResponseEntity(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }catch (Exception exception){
+            if (exception.getMessage().contains("Se ha alcanzado el número máximo de elementos permitidos")){
+                return new ResponseEntity("Se ha alcanzado el número máximo de elementos permitidos, por favor contacte con un Superadministrador", HttpStatus.BAD_REQUEST);
+            }else  return new ResponseEntity(exception.getMessage(), HttpStatus.BAD_REQUEST);
 
         }
+
 
         ArrayList<ErroresImportador> resultadoImportacion = new ArrayList<>();
 
@@ -70,6 +66,7 @@ public class BalizaRepository {
 
             Sheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rows = sheet.iterator();
+
 
             int rowNumber = 0;
             while (rows.hasNext()) {
@@ -80,18 +77,19 @@ public class BalizaRepository {
                 TipoContrato tipoContrato = new TipoContrato();
 
                 if (rowNumber == 0) {
-                    if (cellsInRow.next().getStringCellValue().contains("Clave baliza")) {
+                    if (cellsInRow.next().getStringCellValue().contains("Clave baliza")){
                         rowNumber++;
                         continue;
-                    } else {
-                        return new ResponseEntity("Introduzca un excel de balizas válido para importar....",
-                                HttpStatus.BAD_REQUEST);
+                    }else {
+                        return new ResponseEntity("Introduzca un excel de balizas válido para importar....", HttpStatus.BAD_REQUEST);
                     }
                 }
 
-                SALTO: try {
 
-                    Balizas balizas = new Balizas();
+                SALTO:
+                try {
+
+                   Balizas balizas = new Balizas();
 
                     boolean allCellsEmpty = true;
                     for (Cell cell : currentRow) {
@@ -105,6 +103,7 @@ public class BalizaRepository {
                         break SALTO;
                     }
 
+
                     while (cellsInRow.hasNext()) {
                         Cell currentCell = cellsInRow.next();
 
@@ -115,40 +114,29 @@ public class BalizaRepository {
                             case 0 -> {
                                 String nombre_baliza = currentCell.getStringCellValue();
                                 try {
-                                    Balizas baliza = balizaFeignClient.findFirstByClave(nombre_baliza,
-                                            "Bearer " + token);
-                                    if (baliza.getClave().equals(nombre_baliza)) {
+                                    Balizas baliza = balizaFeignClient.findFirstByClave(nombre_baliza, "Bearer "+token);
+                                    if (baliza.getClave().equals(nombre_baliza)){
                                         importacionesIncorrectas++;
-                                        resultadoImportacion
-                                                .add(new ErroresImportador("Error en el nombre de la baliza",
-                                                        " Ya existe una baliza con el nombre o clave con valor:"
-                                                                + currentCell,
-                                                        importacionesCorrectas, importacionesIncorrectas));
+                                        resultadoImportacion.add(new ErroresImportador("Error en el nombre de la baliza", " Ya existe una baliza con el nombre o clave con valor:" + currentCell, importacionesCorrectas, importacionesIncorrectas));
                                         break SALTO;
                                     }
-                                } catch (Exception exception) {
+                                }catch (Exception exception){
                                     log.trace("NO EXISTE BALIZA CON ESE NOMBRE");
                                 }
-                                if (nombre_baliza.equals("")) {
+                                if (nombre_baliza.equals("")){
                                     importacionesIncorrectas++;
-                                    resultadoImportacion.add(new ErroresImportador("Error en el nombre de la baliza",
-                                            "El nombre es obligatorio.", importacionesCorrectas,
-                                            importacionesIncorrectas));
+                                    resultadoImportacion.add(new ErroresImportador("Error en el nombre de la baliza", "El nombre es obligatorio." , importacionesCorrectas, importacionesIncorrectas));
                                     break SALTO;
                                 }
                                 balizas.setClave(currentCell.getStringCellValue());
                             }
                             case 1 -> {
                                 try {
-                                    tipoBaliza = tipoBalizaFeignClient
-                                            .tipoBalizaFeign(currentCell.getStringCellValue());
+                                    tipoBaliza = tipoBalizaFeignClient.tipoBalizaFeign(currentCell.getStringCellValue());
                                     balizas.setTipoBaliza(tipoBaliza);
-                                } catch (Exception e) {
-                                    log.error("Error accediendo al servicio tipo de baliza, al importar balizas: "
-                                            + e.getMessage());
-                                    return new ResponseEntity(
-                                            "Error al comunicarse con el servicio tipo baliza, contacte con el administrador",
-                                            HttpStatus.BAD_REQUEST);
+                                }catch (Exception e){
+                                    log.error("Error accediendo al servicio tipo de baliza, al importar balizas: "+e.getMessage());
+                                    return new ResponseEntity("Error al comunicarse con el servicio tipo baliza, contacte con el administrador", HttpStatus.BAD_REQUEST);
                                 }
 
                             }
@@ -159,12 +147,10 @@ public class BalizaRepository {
                             case 6 -> {
                                 String imei = currentCell.getStringCellValue();
                                 Pattern pattern = Pattern.compile("^\\d{20}$");
-                                Matcher matcherImei = pattern.matcher(imei);
-                                if (!matcherImei.find()) {
+                                Matcher matcherImei= pattern.matcher(imei);
+                                if (!matcherImei.find()){
                                     importacionesIncorrectas++;
-                                    resultadoImportacion.add(new ErroresImportador("Error en el IMEI de la baliza",
-                                            " Introduzca un IMEI con formato correcto de 20 cifras: " + currentCell,
-                                            importacionesCorrectas, importacionesIncorrectas));
+                                    resultadoImportacion.add(new ErroresImportador("Error en el IMEI de la baliza", " Introduzca un IMEI con formato correcto de 20 cifras: " + currentCell, importacionesCorrectas, importacionesIncorrectas));
                                     break SALTO;
 
                                 }
@@ -173,17 +159,13 @@ public class BalizaRepository {
                             case 7 -> {
                                 String numero_telefono = currentCell.getStringCellValue();
 
-                                if (!numero_telefono.trim().isEmpty()) {
+                                if (!numero_telefono.trim().isEmpty()){
                                     Pattern pattern = Pattern.compile("^\\d{8,11}$");
                                     Matcher matcherTelefono = pattern.matcher(numero_telefono);
 
                                     if (!matcherTelefono.find()) {
                                         importacionesIncorrectas++;
-                                        resultadoImportacion.add(new ErroresImportador(
-                                                "Error en el teléfono de la baliza",
-                                                " Introduzca un teléfono con formato correcto, valor incorrecto: "
-                                                        + currentCell,
-                                                importacionesCorrectas, importacionesIncorrectas));
+                                        resultadoImportacion.add(new ErroresImportador("Error en el teléfono de la baliza", " Introduzca un teléfono con formato correcto, valor incorrecto: " + currentCell, importacionesCorrectas, importacionesIncorrectas));
                                         break SALTO;
                                     }
                                 }
@@ -192,78 +174,65 @@ public class BalizaRepository {
                             }
 
                             case 8 -> {
-                                tipoContrato = tipoContratoFeignClient
-                                        .tipocontratoFeign(currentCell.getStringCellValue());
+                                tipoContrato = tipoContratoFeignClient.tipocontratoFeign(currentCell.getStringCellValue());
                                 balizas.setTipoContrato(tipoContrato);
                             }
                             case 9 -> balizas.setCompania(currentCell.getStringCellValue());
-                            case 10 -> {
+                            case 10 ->{
                                 String pin = currentCell.getStringCellValue();
-                                if (!pin.trim().isEmpty()) {
+                                if (!pin.trim().isEmpty()){
                                     Pattern pattern = Pattern.compile("^\\d{4}$");
                                     Matcher matcherPin = pattern.matcher(pin);
 
                                     if (!matcherPin.find()) {
                                         importacionesIncorrectas++;
-                                        resultadoImportacion.add(new ErroresImportador("Error en el pin de la baliza",
-                                                " Introduzca un pin válido de 4 cifras: " + pin, importacionesCorrectas,
-                                                importacionesIncorrectas));
+                                        resultadoImportacion.add(new ErroresImportador("Error en el pin de la baliza", " Introduzca un pin válido de 4 cifras: " + pin, importacionesCorrectas, importacionesIncorrectas));
                                         break SALTO;
                                     }
                                 }
-                                balizas.setPin1(pin);
-                            }
-                            case 11 -> {
+                                balizas.setPin1(pin);}
+                            case 11 ->{
                                 String pin = currentCell.getStringCellValue();
-                                if (!pin.trim().isEmpty()) {
+                                if (!pin.trim().isEmpty()){
                                     Pattern pattern = Pattern.compile("^\\d{4}$");
                                     Matcher matcherPin = pattern.matcher(pin);
 
                                     if (!matcherPin.find()) {
                                         importacionesIncorrectas++;
-                                        resultadoImportacion.add(new ErroresImportador("Error en el pin de la baliza",
-                                                " Introduzca un pin válido de 4 cifras: " + pin, importacionesCorrectas,
-                                                importacionesIncorrectas));
+                                        resultadoImportacion.add(new ErroresImportador("Error en el pin de la baliza", " Introduzca un pin válido de 4 cifras: " + pin, importacionesCorrectas, importacionesIncorrectas));
                                         break SALTO;
                                     }
                                 }
                                 balizas.setPin2(pin);
                             }
-                            case 12 -> {
+                            case 12 ->{
                                 String puk = currentCell.getStringCellValue();
-                                if (!puk.trim().isEmpty()) {
+                                if (!puk.trim().isEmpty()){
                                     Pattern pattern = Pattern.compile("^\\d{10}$");
                                     Matcher matcherPuk = pattern.matcher(puk);
 
                                     if (!matcherPuk.find()) {
                                         importacionesIncorrectas++;
-                                        resultadoImportacion.add(new ErroresImportador("Error en el puk de la baliza",
-                                                " Introduzca un puk válido de 10 cifras: " + currentCell,
-                                                importacionesCorrectas, importacionesIncorrectas));
+                                        resultadoImportacion.add(new ErroresImportador("Error en el puk de la baliza", " Introduzca un puk válido de 10 cifras: " + currentCell, importacionesCorrectas, importacionesIncorrectas));
                                         break SALTO;
                                     }
                                 }
-                                balizas.setPuk(puk);
-                            }
+                                balizas.setPuk(puk);}
                             case 13 -> balizas.setIccTarjeta(currentCell.getStringCellValue());
 
                             case 14 -> {
-                                Conexiones conexiones = conexionFeignClient
-                                        .findConexionByIp(currentCell.getStringCellValue());
+                                Conexiones conexiones = conexionFeignClient.findConexionByIp(currentCell.getStringCellValue());
                                 balizas.setServidor(conexiones);
                             }
                             case 15 -> {
                                 String puerto = currentCell.getStringCellValue();
-                                if (!puerto.trim().isEmpty()) {
+                                if (!puerto.trim().isEmpty()){
                                     Pattern pattern = Pattern.compile("^\\d{1,5}$");
                                     Matcher matcherPuerto = pattern.matcher(puerto);
 
                                     if (!matcherPuerto.find()) {
                                         importacionesIncorrectas++;
-                                        resultadoImportacion
-                                                .add(new ErroresImportador("Error en el puerto de la baliza",
-                                                        " Introduzca un puerto válido: " + puerto,
-                                                        importacionesCorrectas, importacionesIncorrectas));
+                                        resultadoImportacion.add(new ErroresImportador("Error en el puerto de la baliza", " Introduzca un puerto válido: " + puerto, importacionesCorrectas, importacionesIncorrectas));
                                         break SALTO;
                                     }
                                 }
@@ -274,7 +243,7 @@ public class BalizaRepository {
                             }
                         }
                     }
-                    if (balizas.getClave() == null ||
+                    if(     balizas.getClave() == null ||
                             balizas.getClave().equals("") ||
                             balizas.getMarca() == null ||
                             balizas.getMarca().equals("") ||
@@ -287,27 +256,23 @@ public class BalizaRepository {
                             balizas.getCompania() == null ||
                             balizas.getCompania().equals("") ||
                             balizas.getPuerto() == null ||
-                            balizas.getPuerto().equals("")) {
+                            balizas.getPuerto().equals("")){
 
                         importacionesIncorrectas++;
-                        resultadoImportacion.add(new ErroresImportador("Datos incompletos",
-                                "Debe completar los datos de llenado obligatorios del excel marcados con * en el registro.",
-                                importacionesCorrectas, importacionesIncorrectas));
+                        resultadoImportacion.add(new ErroresImportador("Datos incompletos", "Debe completar los datos de llenado obligatorios del excel marcados con * en el registro.", importacionesCorrectas, importacionesIncorrectas));
                         break SALTO;
                     }
 
                     ++importacionesCorrectas;
                     balizaFeignClient.saveBalizasExcel(balizas, token);
 
-                } catch (Exception exception) {
+                }catch (Exception exception){
                     log.error("Error importando excel de balizas", exception.getMessage());
                     return new ResponseEntity("Error importando excel de balizas.....", HttpStatus.BAD_REQUEST);
                 }
 
-                if (importacionesCorrectas == elementosRestantesDataMiner) {
-                    resultadoImportacion.add(new ErroresImportador("Error creación de elementos",
-                            "Se ha alcanzado el número máximo de elementos permitidos, por favor contacte con un Superadministrador",
-                            importacionesCorrectas, importacionesIncorrectas));
+                if (importacionesCorrectas == elementosRestantesDataMiner){
+                    resultadoImportacion.add(new ErroresImportador("Error creación de elementos", "Se ha alcanzado el número máximo de elementos permitidos, por favor contacte con un Superadministrador", importacionesCorrectas, importacionesIncorrectas));
                     return ResponseEntity.badRequest().body(resultadoImportacion);
                 }
             }
@@ -315,25 +280,25 @@ public class BalizaRepository {
 
         } catch (IOException e) {
             throw new RuntimeException("Error importando archivo: " + e.getMessage());
-        } catch (RuntimeException exception) {
-            log.error("Error importando baliza: " + exception.getMessage());
+        }catch (RuntimeException exception){
+            log.error("Error importando baliza: "+exception.getMessage());
             return new ResponseEntity("Error importando excel de balizas.....", HttpStatus.BAD_REQUEST);
         }
-        if (importacionesIncorrectas > 0) {
-            resultadoImportacion.add(new ErroresImportador("", "", importacionesCorrectas, importacionesIncorrectas));
+        if (importacionesIncorrectas > 0){
+            resultadoImportacion.add(new ErroresImportador("","",importacionesCorrectas, importacionesIncorrectas));
             return ResponseEntity.badRequest().body(resultadoImportacion);
         }
         return new ResponseEntity("Excel importado correctamente.....", HttpStatus.OK);
     }
 
-    public int elementosRestantesDataMiner() {
+
+    public int elementosRestantesDataMiner(){
         int totalElementos;
         int elementosCreadosDataMiner;
 
         try {
 
-            ArrayList<LicenciaDataMiner> licenciaDataMiners = apisFeignClient.obtenerLimiteElementosDataMiner()
-                    .getBody();
+            ArrayList<LicenciaDataMiner> licenciaDataMiners = apisFeignClient.obtenerLimiteElementosDataMiner().getBody();
             AtomicInteger totalLicencia = new AtomicInteger();
             AtomicInteger elementosCreados = new AtomicInteger();
             Objects.requireNonNull(licenciaDataMiners).forEach(d -> {
@@ -343,16 +308,14 @@ public class BalizaRepository {
 
             totalElementos = totalLicencia.get();
             elementosCreadosDataMiner = elementosCreados.get();
-            if (totalElementos == elementosCreadosDataMiner && totalElementos != 0) {
-                throw new RuntimeException(
-                        "Se ha alcanzado el número máximo de elementos permitidos, por favor contacte con un Superadministrador");
+            if (totalElementos == elementosCreadosDataMiner && totalElementos != 0){
+                throw new RuntimeException("Se ha alcanzado el número máximo de elementos permitidos, por favor contacte con un Superadministrador");
             }
 
-        } catch (Exception exception) {
-            log.error("\"Error obteniendo el limite de dispositivos en el dataminer\": " + exception.getMessage());
-            if (exception.getMessage().contains("Se ha alcanzado el número máximo de elementos permitidos")) {
-                throw new RuntimeException(
-                        "Se ha alcanzado el número máximo de elementos permitidos, por favor contacte con un Superadministrador");
+        }catch (Exception exception){
+            log.error("\"Error obteniendo el limite de dispositivos en el dataminer\": "+exception.getMessage());
+            if (exception.getMessage().contains("Se ha alcanzado el número máximo de elementos permitidos")){
+                throw new RuntimeException("Se ha alcanzado el número máximo de elementos permitidos, por favor contacte con un Superadministrador");
             }
             throw new RuntimeException("Error obteniendo el limite de dispositivos en el dataminer");
         }
@@ -360,3 +323,4 @@ public class BalizaRepository {
     }
 
 }
+
