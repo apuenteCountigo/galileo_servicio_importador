@@ -46,6 +46,7 @@ jobs:
             ssh -i ~/id_rsaalain mome@192.168.0.98 '
             cd galileo-newdev/importador/galileo_servicio_importador &&
             export PATH=/opt/maven/bin:$PATH && mvn clean install -DskipTests &&
-            cd target &&
+            mv ./target/servicio-importador-0.0.1-SNAPSHOT.jar ../servicio-importador.jar &&
+            cd .. &&
             ls'
             exit
