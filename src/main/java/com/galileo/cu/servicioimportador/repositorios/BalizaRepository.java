@@ -88,6 +88,9 @@ public class BalizaRepository {
                 }
 
 
+                System.out.println("rowNumber: " + rowNumber);
+
+
                 SALTO:
                 try {
 
