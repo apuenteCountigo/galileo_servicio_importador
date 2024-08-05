@@ -29,6 +29,7 @@ public class BalizaRepository {
     private final TipoContratoFeignClient tipoContratoFeignClient;
     private final ConexionFeignClient conexionFeignClient;
     private final BalizaFeignClient balizaFeignClient;
+
     private final ApisFeignClient apisFeignClient;
 
     @Autowired
