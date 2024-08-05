@@ -43,6 +43,8 @@ public class BalizaRepository {
 
     public ResponseEntity<List<ErroresImportador>> cargarExcelBalizas(InputStream is, String token) {
 
+        log.info("IMPORTAR EXCEL BALIZA V.1");
+
         BufferedInputStream buffStream = new BufferedInputStream(is);
 
         int importacionesCorrectas = 0;
