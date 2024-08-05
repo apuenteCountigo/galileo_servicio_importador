@@ -31,6 +31,9 @@ jobs:
                   start_deploy="true"
               fi
           done
+          echo "start_deploy<<EOF" >> $GITHUB_ENV
+          echo "$start_deploy" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
       - name: executing remote ssh commands using ssh key
         if: env.start_deploy == 'true'
         uses: appleboy/ssh-action@v1.0.0

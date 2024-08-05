@@ -44,7 +44,7 @@ public class BalizaRepository {
     public ResponseEntity<List<ErroresImportador>> cargarExcelBalizas(InputStream is, String token) {
 
         BufferedInputStream buffStream = new BufferedInputStream(is);
-        Balizas balizas = new Balizas();
+
         int importacionesCorrectas = 0;
         int importacionesIncorrectas = 0;
         int elementosRestantesDataMiner = 0;
@@ -67,6 +67,7 @@ public class BalizaRepository {
             Sheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rows = sheet.iterator();
 
+
             int rowNumber = 0;
             while (rows.hasNext()) {
                 Row currentRow = rows.next();
@@ -84,12 +85,30 @@ public class BalizaRepository {
                     }
                 }
 
+
                 SALTO:
                 try {
+
+                   Balizas balizas = new Balizas();
+
+                    boolean allCellsEmpty = true;
+                    for (Cell cell : currentRow) {
+                        if (cell.getCellType() != CellType.BLANK) {
+                            allCellsEmpty = false;
+                            break;
+                        }
+                    }
+
+                    if (allCellsEmpty) {
+                        break SALTO;
+                    }
+
+
                     while (cellsInRow.hasNext()) {
                         Cell currentCell = cellsInRow.next();
 
                         int columnIndex = currentCell.getColumnIndex();
+
                         switch (columnIndex) {
 
                             case 0 -> {
@@ -102,7 +121,7 @@ public class BalizaRepository {
                                         break SALTO;
                                     }
                                 }catch (Exception exception){
-                                    log.trace("NO EXISTE BALIZA ESE NOMBRE");
+                                    log.trace("NO EXISTE BALIZA CON ESE NOMBRE");
                                 }
                                 if (nombre_baliza.equals("")){
                                     importacionesIncorrectas++;
@@ -247,12 +266,11 @@ public class BalizaRepository {
                     ++importacionesCorrectas;
                     balizaFeignClient.saveBalizasExcel(balizas, token);
 
-                    balizas = new Balizas();
-
                 }catch (Exception exception){
                     log.error("Error importando excel de balizas", exception.getMessage());
                     return new ResponseEntity("Error importando excel de balizas.....", HttpStatus.BAD_REQUEST);
                 }
+
                 if (importacionesCorrectas == elementosRestantesDataMiner){
                     resultadoImportacion.add(new ErroresImportador("Error creación de elementos", "Se ha alcanzado el número máximo de elementos permitidos, por favor contacte con un Superadministrador", importacionesCorrectas, importacionesIncorrectas));
                     return ResponseEntity.badRequest().body(resultadoImportacion);
