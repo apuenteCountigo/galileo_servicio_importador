@@ -43,9 +43,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            ssh -i ~/id_rsaalain mome@192.168.0.98 '
-            cd galileo-newdev/importador/galileo_servicio_importador &&
-            ls &&
-            export PATH=/opt/maven/bin:$PATH && mvn clean install -DskipTests &&
-            docker images'
+            ls
             exit
