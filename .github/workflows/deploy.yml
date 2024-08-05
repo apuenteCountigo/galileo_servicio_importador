@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - servicio_config_server
+      - main
   workflow_dispatch:
 jobs:
   run_pull:
@@ -41,7 +41,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             ssh -i ~/id_rsaalain mome@192.168.0.98 '
-            cd galileo-newdev/galileo_servicio_importador &&
+            cd galileo-newdev/importador/galileo_servicio_importador &&
             ls &&
             export PATH=/opt/maven/bin:$PATH && mvn clean install -DskipTests &&
             docker images'
