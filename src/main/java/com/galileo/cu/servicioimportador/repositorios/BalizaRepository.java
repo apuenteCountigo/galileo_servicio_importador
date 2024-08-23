@@ -43,8 +43,6 @@ public class BalizaRepository {
 
     public ResponseEntity<List<ErroresImportador>> cargarExcelBalizas(InputStream is, String token) {
 
-        log.info("IMPORTAR EXCEL BALIZA V.1");
-
         BufferedInputStream buffStream = new BufferedInputStream(is);
 
         int importacionesCorrectas = 0;
@@ -86,9 +84,6 @@ public class BalizaRepository {
                         return new ResponseEntity("Introduzca un excel de balizas válido para importar....", HttpStatus.BAD_REQUEST);
                     }
                 }
-
-
-                System.out.println("rowNumber: " + rowNumber);
 
 
                 SALTO:
