@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,7 +50,7 @@ public class UsuarioRepository {
         this.unidadesUsuarRepository = unidadesUsuarRepository;
     }
 
-    public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern.compile("^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,6}$");
+    public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
 
 
     public ResponseEntity<List<ErroresImportador>> cargarExcelUsuarios(InputStream is, String token) {
@@ -189,7 +190,7 @@ public class UsuarioRepository {
                             }
                             case 4 -> {
                                 String email = currentCell.getStringCellValue();
-                                Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(email);
+                                Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(email.toLowerCase(Locale.ROOT));
                                 if (!matcher.find()) {
                                     ++importacionesIncorrectas;
                                     resultadoImportacion.add(new ErroresImportador("No se importará el registro.", "Valor de email incorrecto introducido: " + currentCell, importacionesCorrectas, importacionesIncorrectas));
