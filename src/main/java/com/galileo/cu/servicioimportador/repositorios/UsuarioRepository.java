@@ -189,8 +189,9 @@ public class UsuarioRepository {
                                 usuario.setContacto(numero_telefono);
                             }
                             case 4 -> {
-                                String email = currentCell.getStringCellValue();
-                                Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(email.toLowerCase(Locale.ROOT));
+                                String email = currentCell.getStringCellValue().toLowerCase(Locale.ROOT);
+
+                                Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(email);
                                 if (!matcher.find()) {
                                     ++importacionesIncorrectas;
                                     resultadoImportacion.add(new ErroresImportador("No se importará el registro.", "Valor de email incorrecto introducido: " + currentCell, importacionesCorrectas, importacionesIncorrectas));

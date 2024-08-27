@@ -128,10 +128,10 @@ public class UnidadRepository {
                             case 3 -> unidad.setGroupWise(currentCell.getStringCellValue());
                             case 4 -> {
 
-                                String email = currentCell.getStringCellValue();
+                                String email = currentCell.getStringCellValue().toLowerCase(Locale.ROOT);
 
                                 if (!email.trim().isEmpty()){
-                                    Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(email.toLowerCase(Locale.ROOT));
+                                    Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(email);
                                     if (!matcher.find()){
                                         importacionesIncorrectas++;
                                         resultadoImportacion.add(new ErroresImportador("Formato de correo electrónico no válido", "Introdusca un correo válido:" + currentCell, importacionesCorrectas, importacionesIncorrectas));
