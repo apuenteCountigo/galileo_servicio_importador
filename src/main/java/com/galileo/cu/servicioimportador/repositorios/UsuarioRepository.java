@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -105,7 +106,7 @@ public class UsuarioRepository {
                     }
 
                     if (allCellsEmpty) {
-                      break SALTO;
+                        break SALTO;
                     }
 
                     while (cellsInRow.hasNext()) {
@@ -113,7 +114,7 @@ public class UsuarioRepository {
                         Empleos empleo = new Empleos();
                         Estados estado = new Estados();
                         Unidades unidad = new Unidades();
-                      
+
 
                         Cell currentCell = cellsInRow.next();
                         int columnIndex = currentCell.getColumnIndex();
@@ -124,7 +125,7 @@ public class UsuarioRepository {
                                 try {
                                     usuario = usuarioFeignClient.findByTip(tip, "Bearer " + token);
                                     if (usuario != null){
-                                       ++importacionesIncorrectas;
+                                        ++importacionesIncorrectas;
                                         resultadoImportacion.add(new ErroresImportador("Error al importar parámetro TIP.", "  El TIP ya esta en uso con valor: " + currentCell, importacionesCorrectas, importacionesIncorrectas));
                                         break SALTO;
                                     }
@@ -153,7 +154,7 @@ public class UsuarioRepository {
                                 }
                                 String nombre_usuario = currentCell.getStringCellValue();
 
-                                Pattern patternNombre = Pattern.compile("[a-zA-Z]");
+                                Pattern patternNombre =  Pattern.compile("^[a-zA-Z]+( [a-zA-Z]+)?$");
                                 Matcher matcherNombre = patternNombre.matcher(nombre_usuario);
 
                                 if (!matcherNombre.find()) {
@@ -166,7 +167,7 @@ public class UsuarioRepository {
                             case 2 -> {
                                 String apellidos_usuario = currentCell.getStringCellValue();
 
-                                Pattern patternApe = Pattern.compile("[a-zA-Z]");
+                                Pattern patternApe = Pattern.compile("^[a-zA-Z]+( [a-zA-Z]+)?$");
                                 Matcher matcherApe = patternApe.matcher(apellidos_usuario);
 
                                 if (!matcherApe.find()) {
@@ -202,7 +203,7 @@ public class UsuarioRepository {
                                     usuariosTraccarList = apisFeignClient.listarUsuariosTraccar();
                                 }catch (Exception exception){
                                     if(exception.getMessage().contains("Error listando usuarios TRACCAR")){
-                                       return new ResponseEntity("Error importando excel de usuarios, al parecer no hay conexión con TRACCAR.....", HttpStatus.BAD_REQUEST);
+                                        return new ResponseEntity("Error importando excel de usuarios, al parecer no hay conexión con TRACCAR.....", HttpStatus.BAD_REQUEST);
                                     }
                                 }
 
@@ -232,7 +233,7 @@ public class UsuarioRepository {
                                 usuario.setEmpleos(empleo);
                             }
                             case 8 -> {
-                               String estado_entrada = currentCell.getStringCellValue();
+                                String estado_entrada = currentCell.getStringCellValue();
                                 if (usuario.getPerfil().getDescripcion().equals("Super Administrador") && !estado_entrada.equals("ACTIVO")){
                                     ++importacionesIncorrectas;
                                     resultadoImportacion.add(new ErroresImportador("No se importará el registro.","El usuario con TIP: "+usuario.getTip() + " es un super administrador y no puede ser invitado externo.", importacionesCorrectas, importacionesIncorrectas));
