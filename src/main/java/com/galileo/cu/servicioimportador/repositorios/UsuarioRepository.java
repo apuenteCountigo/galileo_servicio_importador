@@ -156,6 +156,7 @@ public class UsuarioRepository {
 
                                 Pattern patternNombre =  Pattern.compile("^[a-zA-Z]+( [a-zA-Z]+)?$");
                                 Matcher matcherNombre = patternNombre.matcher(nombre_usuario);
+                                log.info("Nombre entrante importador: "+nombre_usuario);
 
                                 if (!matcherNombre.find()) {
                                     ++importacionesIncorrectas;
@@ -166,7 +167,6 @@ public class UsuarioRepository {
                             }
                             case 2 -> {
                                 String apellidos_usuario = currentCell.getStringCellValue();
-
                                 Pattern patternApe = Pattern.compile("^[a-zA-Z]+( [a-zA-Z]+)?$");
                                 Matcher matcherApe = patternApe.matcher(apellidos_usuario);
 
