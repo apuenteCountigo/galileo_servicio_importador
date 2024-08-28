@@ -7,6 +7,7 @@ import com.galileo.cu.servicioimportador.entidades.LicenciaDataMiner;
 import lombok.extern.log4j.Log4j2;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.Banner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
@@ -141,7 +142,10 @@ public class BalizaRepository {
 
                             }
                             case 2 -> balizas.setMarca(currentCell.getStringCellValue());
-                            case 3 -> balizas.setModelo(currentCell.getStringCellValue());
+                            case 3 -> {
+                                ModelosBalizas modelosBalizas = new ModelosBalizas();
+                                modelosBalizas.setDescripcion((currentCell.getStringCellValue()));
+                                balizas.setModelo(modelosBalizas);}
                             case 4 -> balizas.setNumSerie(currentCell.getStringCellValue());
                             case 5 -> balizas.setTipoCoordenada(currentCell.getStringCellValue());
                             case 6 -> {
