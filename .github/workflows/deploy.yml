@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - main
+      - version-1.1
   workflow_dispatch:
 jobs:
   run_pull:
@@ -27,8 +27,9 @@ jobs:
           start_deploy="false"
           for file in ${{ steps.modified-files.outputs.files }}; do
               echo "Fue modificado $file"
-              if [[ ! "$file" =~ ".yml" ]]; then
-                  start_deploy="true"
+              if [[ ! "$file" =~ ".yml" && ! "$file" =~ "Dockerfile" ]]; then
+                echo "Dentro del IF"
+                start_deploy="true"
               fi
           done
           echo "start_deploy<<EOF" >> $GITHUB_ENV
@@ -43,21 +44,28 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            ssh -i ~/id_rsaalain mome@192.168.0.98 '
-            cd galileo-newdev/importador/galileo_servicio_importador &&
+            ssh -i ~/id_rsaalain mome@192.168.0.212 '
+            cd galileo-dev-v1.1/importador &&
+            if [ ! -d "galileo_servicio_importador" ]; then
+              echo "validada galileo-dev-v1.1/importador/galileo_servicio_importador" &&
+              git clone https://github.com/apuenteCountigo/galileo_servicio_importador.git
+            fi
+            cd galileo_servicio_importador &&
             git fetch origin &&
-            git reset --hard origin/main &&
+            git checkout version-1.1 &&
+            git reset --hard origin/version-1.1 &&
             git pull &&
+            cd servicio-importador &&
             export PATH=/opt/maven/bin:$PATH && mvn clean install -DskipTests &&
-            mv ./target/servicio-importador-0.0.1-SNAPSHOT.jar ../servicio-importador.jar &&
-            cd ../../ &&
+            mv ./target/servicio-importador-0.0.1-SNAPSHOT.jar ../../servicio-importador.jar &&
+            cd ../../../ &&
             CONTAINER_NAME="servicio-importador" &&
             IMAGE_NAME=$(docker inspect --format='{{.Config.Image}}' "$CONTAINER_NAME") &&
             if [[ -n "$IMAGE_NAME" ]]; then
-              docker stop "$CONTAINER_NAME"  
-              docker rm "$CONTAINER_NAME"
-              docker rmi "$IMAGE_NAME"
+              docker stop "$CONTAINER_NAME" &&
+              docker rm "$CONTAINER_NAME" &&
+              docker rmi "$IMAGE_NAME" &&
               echo "$IMAGE_NAME"
-            fi &&
+            fi;
             docker compose up servicio-importador -d'
             exit
