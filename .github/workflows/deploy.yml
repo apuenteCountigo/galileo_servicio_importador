@@ -56,7 +56,7 @@ jobs:
             git reset --hard origin/version-1.1 &&
             git pull &&
             export PATH=/opt/maven/bin:$PATH && mvn clean install -DskipTests &&
-            mv ./target/servicio-importador-0.0.1-SNAPSHOT.jar ../../servicio-importador.jar &&
+            mv ./target/servicio-importador-0.0.1-SNAPSHOT.jar ../servicio-importador.jar &&
             cd ../../ &&
             CONTAINER_NAME="servicio-importador" &&
             IMAGE_NAME=$(docker inspect --format='{{.Config.Image}}' "$CONTAINER_NAME" 2>/dev/null) &&
