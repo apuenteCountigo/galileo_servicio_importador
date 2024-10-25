@@ -139,8 +139,9 @@ public class UsuarioRepository {
                                 if (usuario == null) {
                                     usuario = new Usuarios();
                                     usuario.setTip(tip);
-                                    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-                                    usuario.setPassword(passwordEncoder.encode(tip));
+                                    // PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+                                    // usuario.setPassword(passwordEncoder.encode(tip));
+                                    usuario.setPassword(tip);
                                 }
                             }
                             case 1 -> {
