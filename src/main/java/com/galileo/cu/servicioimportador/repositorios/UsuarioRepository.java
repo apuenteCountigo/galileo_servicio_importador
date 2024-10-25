@@ -382,6 +382,10 @@ public class UsuarioRepository {
                     }
                     ++importacionesCorrectas;
                     usuario.setCertificado("cert");
+                    Estados est = usuario.getEstados();
+                    Estados estUser = new Estados();
+                    estUser.setId(2);
+                    usuario.setEstados(estUser);
                     usuarioFeignClient.saveUsuariosExcel(usuario, token);
                     if (usuario.getUnidad() != null) {
                         Usuarios usuario_update = usuarioFeignClient.findByTip(usuario.getTip(), token);
@@ -389,7 +393,7 @@ public class UsuarioRepository {
                         unidadesUsuarios.setUnidad(usuario.getUnidad());
                         unidadesUsuarios.setUsuario(usuario_update);
                         unidadesUsuarios.setExpira(fechaExpiracion);
-                        unidadesUsuarios.setEstado(usuario.getEstados());
+                        unidadesUsuarios.setEstado(est);
                         unidadesUsuarRepository.save(unidadesUsuarios);
                     }
 
