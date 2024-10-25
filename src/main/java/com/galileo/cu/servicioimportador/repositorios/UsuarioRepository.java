@@ -276,11 +276,12 @@ public class UsuarioRepository {
 
                                 try {
                                     unidad_entrada = currentCell.getStringCellValue();
+                                    // Esto no es correcto se debe cambiar por un repositorio de usuarios.
+                                    Usuarios usuarioImportador = usuarioFeignClient
+                                            .findByTip(decodificarToken.getTip(), "Bearer " + token);
                                     if (usuario.getPerfil().getDescripcion().equals("Usuario Final")
                                             && unidad_entrada.equals("")) {
 
-                                        Usuarios usuarioImportador = usuarioFeignClient
-                                                .findByTip(decodificarToken.getTip(), "Bearer " + token);
                                         if (usuarioImportador.getUnidad() != null) {
                                             usuario.setUnidad(usuarioImportador.getUnidad());
                                         } else {
@@ -292,6 +293,17 @@ public class UsuarioRepository {
                                                     importacionesCorrectas, importacionesIncorrectas));
                                             break SALTO;
                                         }
+                                    } else if (usuario.getPerfil().getId() != 1
+                                            && usuarioImportador.getPerfil().getId() == 2
+                                            && !unidad_entrada
+                                                    .equals(usuarioImportador.getUnidad().getDenominacion())) {
+                                        ++importacionesIncorrectas;
+                                        resultadoImportacion.add(new ErroresImportador(
+                                                "No se importará el registro.",
+                                                "El usuario con TIP: " + usuario.getTip()
+                                                        + " se intenta importar en una unidad a la que el usuario importador no tiene permiso.",
+                                                importacionesCorrectas, importacionesIncorrectas));
+                                        break SALTO;
                                     }
                                     if (usuario.getEstados().getDescripcion().equals("INVITADO")
                                             && unidad_entrada.equals("")) {
