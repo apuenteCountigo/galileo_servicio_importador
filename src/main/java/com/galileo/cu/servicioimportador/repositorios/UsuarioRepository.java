@@ -267,6 +267,14 @@ public class UsuarioRepository {
                                                     + " es un super administrador y no puede ser invitado externo.",
                                             importacionesCorrectas, importacionesIncorrectas));
                                     break SALTO;
+                                } else if (usuario.getPerfil().getId() == 4
+                                        && !estado_entrada.equals("PERMANENTE")) {
+                                    ++importacionesIncorrectas;
+                                    resultadoImportacion.add(new ErroresImportador("No se importará el registro.",
+                                            "El usuario con TIP: " + usuario.getTip()
+                                                    + " es un invitado externo y no puede ser importado como permanente.",
+                                            importacionesCorrectas, importacionesIncorrectas));
+                                    break SALTO;
                                 }
                                 estado = estadoFeignClient.estadoFeign(estado_entrada);
                                 usuario.setEstados(estado);
