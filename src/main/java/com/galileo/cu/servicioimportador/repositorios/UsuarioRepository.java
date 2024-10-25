@@ -268,7 +268,7 @@ public class UsuarioRepository {
                                             importacionesCorrectas, importacionesIncorrectas));
                                     break SALTO;
                                 } else if (usuario.getPerfil().getId() == 4
-                                        && !estado_entrada.equals("PERMANENTE")) {
+                                        && estado_entrada.equals("PERMANENTE")) {
                                     ++importacionesIncorrectas;
                                     resultadoImportacion.add(new ErroresImportador("No se importará el registro.",
                                             "El usuario con TIP: " + usuario.getTip()
