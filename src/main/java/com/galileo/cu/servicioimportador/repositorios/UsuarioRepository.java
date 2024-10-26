@@ -78,9 +78,15 @@ public class UsuarioRepository {
             Iterator<Row> rows = sheet.iterator();
 
             if (!rows.hasNext() || sheet.getPhysicalNumberOfRows() <= 1) {
-                throw new IllegalArgumentException("TEST El archivo Excel está vacío o solo contiene encabezados.");
+                ++importacionesIncorrectas;
+                resultadoImportacion.add(new ErroresImportador("TEST",
+                        "El archivo Excel está vacío o solo contiene encabezados.", 0, 0));
+                // throw new IllegalArgumentException("TEST El archivo Excel está vacío o solo
+                // contiene encabezados.");
             } else if (rows.hasNext() || sheet.getPhysicalNumberOfRows() > 1) {
-                throw new IllegalArgumentException("TEST El archivo Excel contiene datos.");
+                ++importacionesIncorrectas;
+                resultadoImportacion.add(new ErroresImportador("TEST", "El archivo Excel contiene datos.", 0, 0));
+                // throw new IllegalArgumentException("TEST El archivo Excel contiene datos.");
             }
 
             int rowNumber = 0;
