@@ -27,15 +27,14 @@ public class UnidadRepository {
     private final UnidadesFeignClient unidadesFeignClient;
     private final ProvinciaRepository provinciaRepository;
 
-    public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
-
+    public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$",
+            Pattern.CASE_INSENSITIVE);
 
     @Autowired
     public UnidadRepository(UnidadesFeignClient unidadesFeignClient, ProvinciaRepository provinciaRepository) {
         this.provinciaRepository = provinciaRepository;
         this.unidadesFeignClient = unidadesFeignClient;
     }
-
 
     public ResponseEntity<List<ErroresImportador>> cargarExcelUnidades(InputStream is, String token) {
         BufferedInputStream buffStream = new BufferedInputStream(is);
@@ -44,7 +43,6 @@ public class UnidadRepository {
         int importacionesIncorrectas = 0;
         ArrayList<ErroresImportador> resultadoImportacion = new ArrayList<>();
 
-
         try {
 
             Workbook workbook = WorkbookFactory.create(buffStream);
@@ -52,8 +50,16 @@ public class UnidadRepository {
             Sheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rows = sheet.iterator();
 
+            boolean isNotEmpty = true;
+            if (!rows.hasNext() || sheet.getPhysicalNumberOfRows() <= 1) {
+                isNotEmpty = false;
+                ++importacionesIncorrectas;
+                resultadoImportacion.add(new ErroresImportador("Error",
+                        "El archivo Excel está vacío o solo contiene encabezados.", 0, 0));
+            }
+
             int rowNumber = 0;
-            while (rows.hasNext()) {
+            while (isNotEmpty && rows.hasNext()) {
 
                 Row currentRow = rows.next();
 
@@ -61,16 +67,16 @@ public class UnidadRepository {
                 Provincias provincia = new Provincias();
 
                 if (rowNumber == 0) {
-                    if (cellsInRow.next().getStringCellValue().contains("DENOMICACION")){
+                    if (cellsInRow.next().getStringCellValue().contains("DENOMICACION")) {
                         rowNumber++;
                         continue;
-                    }else {
-                        return new ResponseEntity("Introduzca un excel de unidades válido para importar....", HttpStatus.BAD_REQUEST);
+                    } else {
+                        return new ResponseEntity("Introduzca un excel de unidades válido para importar....",
+                                HttpStatus.BAD_REQUEST);
                     }
                 }
 
-                SALTO:
-                try {
+                SALTO: try {
 
                     Unidades unidad = new Unidades();
 
@@ -96,10 +102,15 @@ public class UnidadRepository {
                                 String nombre_unidad = currentCell.getStringCellValue();
 
                                 try {
-                                    unidad = unidadesFeignClient.findUnidadByDescripcion(nombre_unidad, "Bearer " + token);
+                                    unidad = unidadesFeignClient.findUnidadByDescripcion(nombre_unidad,
+                                            "Bearer " + token);
                                     if (nombre_unidad.equals(unidad.getDenominacion())) {
                                         importacionesIncorrectas++;
-                                        resultadoImportacion.add(new ErroresImportador("Error con el nombre de la unidad.", "  Ya existe una unidad con esta descripción registrada:" + currentCell, importacionesCorrectas, importacionesIncorrectas));
+                                        resultadoImportacion
+                                                .add(new ErroresImportador("Error con el nombre de la unidad.",
+                                                        "  Ya existe una unidad con esta descripción registrada:"
+                                                                + currentCell,
+                                                        importacionesCorrectas, importacionesIncorrectas));
                                         break SALTO;
                                     }
                                 } catch (Exception exception) {
@@ -112,13 +123,15 @@ public class UnidadRepository {
                             case 2 -> {
                                 String numero_telefono = currentCell.getStringCellValue();
 
-                                if (!numero_telefono.trim().isEmpty()){
+                                if (!numero_telefono.trim().isEmpty()) {
                                     Pattern pattern = Pattern.compile("^\\d{8,11}$");
                                     Matcher matcherTelefono = pattern.matcher(numero_telefono);
 
                                     if (!matcherTelefono.find()) {
                                         importacionesIncorrectas++;
-                                        resultadoImportacion.add(new ErroresImportador("Teléfono no válido", "  El número de teléfono introducido no es valido:" + currentCell, importacionesCorrectas, importacionesIncorrectas));
+                                        resultadoImportacion.add(new ErroresImportador("Teléfono no válido",
+                                                "  El número de teléfono introducido no es valido:" + currentCell,
+                                                importacionesCorrectas, importacionesIncorrectas));
                                         break SALTO;
                                     }
                                 }
@@ -130,11 +143,14 @@ public class UnidadRepository {
 
                                 String email = currentCell.getStringCellValue().toLowerCase(Locale.ROOT);
 
-                                if (!email.trim().isEmpty()){
+                                if (!email.trim().isEmpty()) {
                                     Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(email);
-                                    if (!matcher.find()){
+                                    if (!matcher.find()) {
                                         importacionesIncorrectas++;
-                                        resultadoImportacion.add(new ErroresImportador("Formato de correo electrónico no válido", "Introdusca un correo válido:" + currentCell, importacionesCorrectas, importacionesIncorrectas));
+                                        resultadoImportacion
+                                                .add(new ErroresImportador("Formato de correo electrónico no válido",
+                                                        "Introdusca un correo válido:" + currentCell,
+                                                        importacionesCorrectas, importacionesIncorrectas));
                                         break SALTO;
                                     }
                                 }
@@ -147,13 +163,16 @@ public class UnidadRepository {
                                 String codigoPostal = currentCell.getStringCellValue();
                                 Pattern pattern = Pattern.compile("^\\d{5}$");
                                 Matcher matcherCodigo = pattern.matcher(codigoPostal);
-                                if (!codigoPostal.equals("")){
+                                if (!codigoPostal.equals("")) {
                                     if (!matcherCodigo.find()) {
                                         importacionesIncorrectas++;
-                                        resultadoImportacion.add(new ErroresImportador("Error en el código postal", " Introduzca un código postal con formato correcto de 5 cifras: " + currentCell, importacionesCorrectas, importacionesIncorrectas));
+                                        resultadoImportacion.add(new ErroresImportador("Error en el código postal",
+                                                " Introduzca un código postal con formato correcto de 5 cifras: "
+                                                        + currentCell,
+                                                importacionesCorrectas, importacionesIncorrectas));
                                         break SALTO;
                                     }
-                            }
+                                }
                                 unidad.setCodigoPostal(codigoPostal);
                             }
 
@@ -163,7 +182,8 @@ public class UnidadRepository {
                                 String provincia_entrada = currentCell.getStringCellValue();
                                 provincia = provinciaRepository.findProvinciasByDescripcion(provincia_entrada);
 
-                                if (provincia !=null) unidad.setProvincia(provincia);
+                                if (provincia != null)
+                                    unidad.setProvincia(provincia);
                             }
 
                             default -> {
@@ -171,22 +191,24 @@ public class UnidadRepository {
                         }
                     }
 
-                    if(unidad.getDenominacion() == null
+                    if (unidad.getDenominacion() == null
                             || unidad.getDenominacion().equals("")
                             || unidad.getResponsable() == null
                             || unidad.getResponsable().equals("")
                             || unidad.getTelefono() == null
-                            || unidad.getTelefono().equals("")){
+                            || unidad.getTelefono().equals("")) {
                         importacionesIncorrectas++;
-                        resultadoImportacion.add(new ErroresImportador("Datos incompletos", "Debe completar los datos de llenado obligatorios del excel marcados con * en el registro en la unidad: "+unidad.getDenominacion()+".", importacionesCorrectas, importacionesIncorrectas));
+                        resultadoImportacion.add(new ErroresImportador("Datos incompletos",
+                                "Debe completar los datos de llenado obligatorios del excel marcados con * en el registro en la unidad: "
+                                        + unidad.getDenominacion() + ".",
+                                importacionesCorrectas, importacionesIncorrectas));
                         break SALTO;
                     }
 
                     unidadesFeignClient.saveUnidadesExcel(unidad, "Bearer " + token);
                     ++importacionesCorrectas;
 
-
-                }catch (Exception exception) {
+                } catch (Exception exception) {
                     log.error(exception.getMessage());
                     return new ResponseEntity("Error importando excel de unidades.....", HttpStatus.BAD_REQUEST);
                 }
@@ -194,14 +216,13 @@ public class UnidadRepository {
             workbook.close();
 
         } catch (IOException e) {
-            log.error("Error importando unidades desde el excel.. "+e.getMessage());
+            log.error("Error importando unidades desde el excel.. " + e.getMessage());
             return new ResponseEntity("Error importando excel de unidades.....", HttpStatus.BAD_REQUEST);
         }
-        if (importacionesIncorrectas > 0){
-            resultadoImportacion.add(new ErroresImportador("","",importacionesCorrectas, importacionesIncorrectas));
+        if (importacionesIncorrectas > 0) {
+            resultadoImportacion.add(new ErroresImportador("", "", importacionesCorrectas, importacionesIncorrectas));
             return ResponseEntity.badRequest().body(resultadoImportacion);
         }
         return new ResponseEntity("Excel importado correctamente.....", HttpStatus.OK);
     }
 }
-
