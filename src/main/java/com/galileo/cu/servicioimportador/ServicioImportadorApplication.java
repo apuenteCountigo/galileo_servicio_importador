@@ -20,7 +20,7 @@ public class ServicioImportadorApplication implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         System.out.println("**************************************");
-        System.out.println("Importador V1.1-2024-10-25 04:42");
+        System.out.println("Importador V-1.1.1 2024-10-28 14:42");
     }
 
 }
