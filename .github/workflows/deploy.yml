@@ -67,5 +67,5 @@ jobs:
               echo "$IMAGE_NAME"
             fi;
             docker compose up servicio-importador -d &&
-            docker save -o /home/mome/galileo-images-v1.1/servicio-importador_1.1.4.tar.gz galileo/servicio-importador:1.1.4 '
+            docker save -o /home/mome/galileo-images-v1.1/servicio-importador_1.1.5.tar.gz galileo/servicio-importador:1.1.5 '
             exit
